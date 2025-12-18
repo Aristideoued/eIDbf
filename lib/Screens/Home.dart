@@ -10,33 +10,48 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   static const Color mainColor = Color(0xFF0B3C8A);
+  static const Color bgColor = Color(0xFFF5F6FA);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: mainColor,
         elevation: 0,
         title: const Text("eIDbf"),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _header(),
-            _sectionTitle("IDENTITÉ"),
-            _identityGrid(context),
-
-            _singleButton(
-              context,
-              icon: Icons.miscellaneous_services,
-              title: "E-SERVICES",
-              page: const EservicesPage(),
+      body: Stack(
+        children: [
+          // 🔥 FOND DÉCORATIF BAS
+          /* Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 180,
+              decoration: const BoxDecoration(
+                color: mainColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),*/
+
+          // 🔝 CONTENU PRINCIPAL
+          Column(
+            children: [
+              _header(),
+
+              const SizedBox(height: 40),
+
+              Expanded(child: _identityGrid(context)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -45,7 +60,7 @@ class HomePage extends StatelessWidget {
   Widget _header() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 22),
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
       decoration: const BoxDecoration(
         color: mainColor,
         borderRadius: BorderRadius.only(
@@ -55,23 +70,40 @@ class HomePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const CircleAvatar(
-            radius: 38,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.person, size: 42, color: mainColor),
+          // 🔥 IMAGE À LA PLACE DE L’AVATAR
+          Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Image.asset("assets/user.jpeg", fit: BoxFit.contain),
+            ),
           ),
+
           const SizedBox(height: 10),
-          const Text("123456789123", style: TextStyle(color: Colors.white70)),
-          const SizedBox(height: 4),
+
+          const Text(
+            "123456789123",
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+
+          const SizedBox(height: 2),
+
           const Text(
             "OUEDRAOGO Aristide",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
+
           const SizedBox(height: 12),
+
           ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.qr_code),
@@ -79,10 +111,11 @@ class HomePage extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: mainColor,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(22),
               ),
+              elevation: 0,
             ),
           ),
         ],
@@ -90,31 +123,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ================= SECTION TITLE =================
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-      child: Container(
-        height: 32,
-        decoration: BoxDecoration(
-          color: mainColor,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ================= IDENTITY GRID (COMPACT) =================
+  // ================= GRID =================
   Widget _identityGrid(BuildContext context) {
     final items = [
       (Icons.credit_card, "MA CNIB", const CNIBPage()),
@@ -122,34 +131,31 @@ class HomePage extends StatelessWidget {
       (Icons.description, "CERTIFICAT DE NATIONALITÉ", const CertificatPage()),
       (Icons.gavel, "CASIER JUDICIAIRE", const CasierPage()),
       (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage()),
+      (Icons.miscellaneous_services, "E-SERVICES", const EservicesPage()),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: items.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 2.8, // 🔥 TRÈS COMPACT
-        ),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return _menuButton(
-            context,
-            icon: item.$1,
-            title: item.$2,
-            page: item.$3,
-          );
-        },
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 2.1,
       ),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return _menuButton(
+          context,
+          icon: item.$1,
+          title: item.$2,
+          page: item.$3,
+        );
+      },
     );
   }
 
-  // ================= MENU BUTTON (ULTRA COMPACT) =================
+  // ================= MENU BUTTON =================
   Widget _menuButton(
     BuildContext context, {
     required IconData icon,
@@ -158,51 +164,37 @@ class HomePage extends StatelessWidget {
   }) {
     return Material(
       color: mainColor,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
+      elevation: 2,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         onTap: () {
           Navigator.push(context, MaterialPageRoute(builder: (_) => page));
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 22, color: Colors.white),
-              const SizedBox(width: 6),
-              Flexible(
+              const SizedBox(width: 8),
+              Expanded(
                 child: Text(
                   title,
+                  textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11.5,
+                    fontSize: 11.8,
                     fontWeight: FontWeight.w600,
-                    height: 1.2,
+                    height: 1.25,
                   ),
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ================= SINGLE BUTTON =================
-  Widget _singleButton(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Widget page,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        height: 46,
-        child: _menuButton(context, icon: icon, title: title, page: page),
       ),
     );
   }

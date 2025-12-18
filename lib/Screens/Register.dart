@@ -241,11 +241,14 @@ class _RegisterPageState extends State<RegisterPage> {
 }
 */
 
+import 'package:e_id_bf/Screens/login.dart';
 import 'package:e_id_bf/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -493,13 +496,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   onPressed: () {
                     _createAccount(); // Appeler la fonction pour créer le compte
                   },
-                  child: Text('Créer un Compte'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                     textStyle: TextStyle(fontSize: 16),
                   ),
+                  child: Text('Créer un Compte'),
                 ),
               ),
             ],
