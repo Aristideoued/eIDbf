@@ -4,6 +4,7 @@ import 'package:e_id_bf/Screens/Identity/certificat_page.dart';
 import 'package:e_id_bf/Screens/Identity/cnib_page.dart';
 import 'package:e_id_bf/Screens/Identity/passport_page.dart';
 import 'package:e_id_bf/Screens/Identity/permis_page.dart';
+import 'package:e_id_bf/Screens/qrcode_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -103,19 +104,28 @@ class HomePage extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.qr_code),
-            label: const Text("Générer QR Code"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: mainColor,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+          Builder(
+            builder: (context) => ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const QrCodePage()),
+                );
+              },
+              icon: const Icon(Icons.qr_code),
+              label: const Text("Générer QR Code"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: mainColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 9,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                elevation: 0,
               ),
-              elevation: 0,
             ),
           ),
         ],
