@@ -1,3 +1,4 @@
+import 'package:e_id_bf/layout/main_layout.dart';
 import 'package:flutter/material.dart';
 
 class EservicesPage extends StatelessWidget {
@@ -11,80 +12,62 @@ class EservicesPage extends StatelessWidget {
         title: const Text("E-Services"),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: MainLayout.mainColor,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Services disponibles",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 16),
-
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 1.1,
-                children: [
-                  _serviceCard(
-                    context,
-                    icon: Icons.verified_user,
-                    title: "Vérification\nd’identité",
-                    color: Colors.green,
-                    onTap: () {
-                      // TODO : Navigation
-                    },
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.people_alt,
-                    title: "Registre\nSocial Unique",
-                    color: Colors.blue,
-                    onTap: () {
-                      // TODO : Navigation
-                    },
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.phone_android,
-                    title: "Téléphonies\nmobiles",
-                    color: Colors.orange,
-                    onTap: () {
-                      // TODO : Navigation
-                    },
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.more_horiz,
-                    title: "Autres\nservices",
-                    color: Colors.grey,
-                    onTap: () {
-                      // TODO
-                    },
-                  ),
-                ],
+            Center(
+              child: const Text(
+                "Services disponibles",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(height: 16),
+            GridView.count(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              crossAxisCount: 2,
+              mainAxisSpacing: 14,
+              crossAxisSpacing: 14,
+              childAspectRatio: 1.4, // augmente pour des cartes moins hautes
+              children: [
+                _serviceCard(
+                  icon: Icons.verified_user,
+                  title: "Vérification\nd’identité",
+                  onTap: () {},
+                ),
+                _serviceCard(
+                  icon: Icons.people_alt,
+                  title: "Registre\nSocial Unique",
+                  onTap: () {},
+                ),
+                _serviceCard(
+                  icon: Icons.phone_android,
+                  title: "Téléphonies\nmobiles",
+                  onTap: () {},
+                ),
+                _serviceCard(
+                  icon: Icons.more_horiz,
+                  title: "Autres\nservices",
+                  onTap: () {},
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 100), // espace pour le bottomNavigationBar
           ],
         ),
       ),
+      bottomNavigationBar: Container(height: 80, color: MainLayout.mainColor),
     );
   }
 
-  // ================= CARD SERVICE =================
-  Widget _serviceCard(
-    BuildContext context, {
+  Widget _serviceCard({
     required IconData icon,
     required String title,
-    required Color color,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -92,7 +75,7 @@ class EservicesPage extends StatelessWidget {
       borderRadius: BorderRadius.circular(18),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: MainLayout.mainColor,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
@@ -102,25 +85,31 @@ class EservicesPage extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12), // réduit ici de 16 à 12
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+              padding: const EdgeInsets.all(12), // cercle icône plus petit
+              decoration: const BoxDecoration(
+                color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 36, color: color),
+              child: Icon(
+                icon,
+                size: 32,
+                color: MainLayout.mainColor,
+              ), // icône légèrement plus petite
             ),
-
-            const SizedBox(height: 14),
-
+            const SizedBox(height: 10),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 13, // texte un peu plus petit
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
           ],
         ),

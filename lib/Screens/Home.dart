@@ -5,6 +5,7 @@ import 'package:e_id_bf/Screens/Identity/cnib_page.dart';
 import 'package:e_id_bf/Screens/Identity/passport_page.dart';
 import 'package:e_id_bf/Screens/Identity/permis_page.dart';
 import 'package:e_id_bf/Screens/qrcode_page.dart';
+import 'package:e_id_bf/layout/main_layout_controller.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -136,12 +137,22 @@ class HomePage extends StatelessWidget {
   // ================= GRID =================
   Widget _identityGrid(BuildContext context) {
     final items = [
-      (Icons.credit_card, "MA CNIB", const CNIBPage()),
-      (Icons.flight, "MON PASSEPORT", const PassportPage()),
-      (Icons.description, "CERTIFICAT DE NATIONALITÉ", const CertificatPage()),
-      (Icons.gavel, "CASIER JUDICIAIRE", const CasierPage()),
-      (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage()),
-      (Icons.miscellaneous_services, "E-SERVICES", const EservicesPage()),
+      (Icons.credit_card, "MA CNIB", const CNIBPage(), false),
+      (Icons.flight, "MON PASSEPORT", const PassportPage(), false),
+      (
+        Icons.description,
+        "CERTIFICAT DE NATIONALITÉ",
+        const CertificatPage(),
+        false,
+      ),
+      (Icons.gavel, "CASIER JUDICIAIRE", const CasierPage(), false),
+      (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage(), false),
+      (
+        Icons.miscellaneous_services,
+        "E-SERVICES",
+        const EservicesPage(),
+        false,
+      ),
     ];
 
     return GridView.builder(
@@ -160,6 +171,7 @@ class HomePage extends StatelessWidget {
           icon: item.$1,
           title: item.$2,
           page: item.$3,
+          isSubPage: item.$4,
         );
       },
     );
@@ -171,6 +183,7 @@ class HomePage extends StatelessWidget {
     required IconData icon,
     required String title,
     required Widget page,
+    required bool isSubPage,
   }) {
     return Material(
       color: mainColor,
@@ -179,8 +192,16 @@ class HomePage extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+          if (isSubPage) {
+            mainLayoutController.openSubPage?.call(
+              page, // ici, page = EservicesPageContent(), pas EservicesPage
+              title: title,
+            );
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+          }
         },
+
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
