@@ -1,3 +1,5 @@
+import 'package:e_id_bf/Screens/Eservices/phone_numbers_page.dart';
+import 'package:e_id_bf/Screens/Eservices/rsu_verification_page.dart';
 import 'package:e_id_bf/Screens/Identity/verification_page.dart';
 import 'package:e_id_bf/layout/main_layout.dart';
 import 'package:flutter/material.dart';
@@ -88,6 +90,20 @@ class _EservicesPageState extends State<EservicesPage> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const IdentityVerificationPage(),
+                        ),
+                      );
+                    } else if (service["title"] == "Registre Social Unique") {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RsuVerificationPage(),
+                        ),
+                      );
+                    } else if (service["title"] == "Téléphonies mobiles") {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PhoneNumbersPage(),
                         ),
                       );
                     }
