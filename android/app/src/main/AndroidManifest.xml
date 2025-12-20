@@ -1,9 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- (optionnel mais conseillé) -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
     <application
         android:label="e_id_bf"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <uses-permission android:name="android.permission.CAMERA"/>
 
         <activity
             android:name=".MainActivity"

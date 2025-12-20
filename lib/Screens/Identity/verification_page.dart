@@ -230,6 +230,7 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
   }
 
   // ================= RESULT =================
+  // ================= RESULT =================
   Widget _resultCard() {
     return Container(
       width: double.infinity,
@@ -245,13 +246,44 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _row("Nom", _result!["nom"]!),
-          _row("Prénom", _result!["prenom"]!),
-          _row("Sexe", _result!["sexe"]!),
-          _row("Date de naissance", _result!["dateNaissance"]!),
+          // ================= PHOTO =================
+          Container(
+            width: 90,
+            height: 110,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade200,
+              image: _result!["photo"] == null
+                  ? DecorationImage(
+                      // image: NetworkImage(_result!["photo"]!),
+                      image: AssetImage("assets/user.jpeg"),
+
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            /*child: _result!["photo"] == null
+                ? const Icon(Icons.person, size: 48, color: Colors.grey)
+                : null,*/
+          ),
+
+          const SizedBox(width: 16),
+
+          // ================= INFOS =================
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _row("Nom", _result!["nom"]!),
+                _row("Prénom", _result!["prenom"]!),
+                _row("Sexe", _result!["sexe"]!),
+                _row("Date de naissance", _result!["dateNaissance"]!),
+              ],
+            ),
+          ),
         ],
       ),
     );
