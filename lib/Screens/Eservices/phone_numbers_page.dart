@@ -72,17 +72,20 @@ class _PhoneNumbersPageState extends State<PhoneNumbersPage> {
   }
 
   // 🔄 Loader
+  // 🔄 Loader centré
   Widget _buildLoader() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        CircularProgressIndicator(),
-        SizedBox(height: 20),
-        Text(
-          "Vérification en cours...",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // 🔹 évite d'occuper tout l'espace
+        children: const [
+          CircularProgressIndicator(),
+          SizedBox(height: 20),
+          Text(
+            "Vérification en cours...",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
     );
   }
 
