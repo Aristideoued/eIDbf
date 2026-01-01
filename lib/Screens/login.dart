@@ -104,6 +104,8 @@ class _LoginPageState extends State<LoginPage> {
                       Navigator.pop(context); // ❌ fermer le loader
 
                       if (response.statusCode == 200) {
+                        print("Response dans login " + response.toString());
+
                         // ✅ Connexion OK
                         Navigator.pushReplacement(
                           context,

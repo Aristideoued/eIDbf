@@ -11,5 +11,7 @@ class ApiConfig {
   // Endpoints
   static const String signin = '/api/auth/signin';
   static const String login = '/api/v1/personnes/login';
+  static String updatePersonne(String iu) => '/api/v1/personnes/update/$iu';
+
   static String personneByIu(String iu) => '/api/v1/personnes/iu/$iu';
 }

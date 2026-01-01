@@ -287,8 +287,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (personne != null) {
         setState(() {
-          _firstName = personne['prenom'] ?? '';
-          _lastName = personne['nom'] ?? '';
+          _firstName = personne['nom'] ?? '';
+          _lastName = personne['prenom'] ?? '';
           _birthDate = personne['dateNaissance'] ?? '';
           _birthPlace = personne['lieuNaissance'] ?? '';
           _gender = personne['sexe'] ?? '';
@@ -320,23 +320,65 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   // Fonction pour créer le compte et afficher un message de succès
-  void _createAccount() {
+  Future<void> _createAccount() async {
     if (_isPasswordMatched) {
       // Affichage du message "Compte créé avec succès"
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Compte créé avec succès !'),
-          backgroundColor: Colors.green,
-        ),
-      );
+
+      try {
+        /* 
+        
+        required String nom,
+    required String prenom,
+    required String lieuNaissance,
+    required String genre,
+    required String dateNaissance,*/
+
+        final response = await PersonneService.registerPersonne(
+          nom: _firstName,
+          prenom: _lastName,
+          lieuNaissance: _birthPlace,
+          sexe: _gender,
+          dateNaissance: _birthDate,
+          iu: _usernameController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        print("Response register====== " + response.toString());
+
+        /*if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Compte créé avec succès !'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          print("Response dans login " + response.toString());
+
+          // ✅ Connexion OK
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+        } else {
+          // ❌ Mauvais identifiants
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Echec de creation de compte')),
+          );
+        }*/
+      } catch (e) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur : $e')));
+      }
 
       // Redirection vers la page de login après un délai de 2 secondes
-      Future.delayed(Duration(seconds: 2), () {
+      /* Future.delayed(Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginPage()),
         );
-      });
+      });*/
     } else {
       // Affichage d'un message d'erreur si les mots de passe ne correspondent pas
       ScaffoldMessenger.of(context).showSnackBar(
@@ -388,7 +430,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextField(
                 controller: TextEditingController(text: _firstName),
                 enabled:
-                    false, // Désactiver le champ pour qu'il soit en lecture seule
+                    true, // Désactiver le champ pour qu'il soit en lecture seule
                 decoration: InputDecoration(
                   labelText: 'Nom',
                   prefixIcon: Icon(Icons.person),
@@ -411,7 +453,7 @@ class _RegisterPageState extends State<RegisterPage> {
               // Champ Prénom (grisé)
               TextField(
                 controller: TextEditingController(text: _lastName),
-                enabled: false,
+                enabled: true,
                 decoration: InputDecoration(
                   labelText: 'Prénom',
                   prefixIcon: Icon(Icons.person),
@@ -431,7 +473,7 @@ class _RegisterPageState extends State<RegisterPage> {
               // Champ Date de naissance (grisé)
               TextField(
                 controller: TextEditingController(text: _birthDate),
-                enabled: false,
+                enabled: true,
                 decoration: InputDecoration(
                   labelText: 'Date de naissance',
                   prefixIcon: Icon(Icons.calendar_today),
@@ -451,7 +493,7 @@ class _RegisterPageState extends State<RegisterPage> {
               // Champ Lieu de naissance (grisé)
               TextField(
                 controller: TextEditingController(text: _birthPlace),
-                enabled: false,
+                enabled: true,
                 decoration: InputDecoration(
                   labelText: 'Lieu de naissance',
                   prefixIcon: Icon(Icons.location_on),
@@ -471,7 +513,7 @@ class _RegisterPageState extends State<RegisterPage> {
               // Champ Genre (grisé)
               TextField(
                 controller: TextEditingController(text: _gender),
-                enabled: false,
+                enabled: true,
                 decoration: InputDecoration(
                   labelText: 'Genre',
                   prefixIcon: Icon(Icons.transgender),
