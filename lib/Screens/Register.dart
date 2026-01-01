@@ -243,6 +243,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
 import 'package:e_id_bf/Screens/login.dart';
 import 'package:e_id_bf/main.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -269,18 +270,45 @@ class _RegisterPageState extends State<RegisterPage> {
   // Variables pour la validation des mots de passe
   bool _isPasswordMatched = true;
 
-  // Simuler la récupération des données depuis un backend
-  void _fetchUserData(String username) async {
-    // Simuler un appel à ton backend pour récupérer les infos de l'utilisateur
-    await Future.delayed(Duration(seconds: 2)); // Simuler un délai d'appel API
+  bool _isLoading = false;
 
-    setState(() {
-      _firstName = "John"; // Récupéré depuis le backend
-      _lastName = "Doe"; // Récupéré depuis le backend
-      _birthDate = "01/01/1990"; // Récupéré depuis le backend
-      _birthPlace = "Paris"; // Récupéré depuis le backend
-      _gender = "Homme"; // Récupéré depuis le backend
-    });
+  // Simuler la récupération des données depuis un backend
+  void _fetchUserData(String iu) async {
+    try {
+      // 🔄 Optionnel : afficher un loader
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Appel au service
+      final personne = await PersonneService.getByIu(iu);
+
+      print("Data============" + personne.toString());
+
+      if (personne != null) {
+        setState(() {
+          _firstName = personne['prenom'] ?? '';
+          _lastName = personne['nom'] ?? '';
+          _birthDate = personne['dateNaissance'] ?? '';
+          _birthPlace = personne['lieuNaissance'] ?? '';
+          _gender = personne['sexe'] ?? '';
+        });
+      } else {
+        // Personne non trouvée
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Aucune personne trouvée pour IU $iu')),
+        );
+      }
+    } catch (e) {
+      print('Erreur récupération personne : $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur serveur ou réseau')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   // Fonction de validation des mots de passe
@@ -348,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
-                  if (value.isNotEmpty) {
+                  if (value.isNotEmpty && value.length == 12) {
                     // Si l'identifiant unique est saisi, on récupère les données du backend
                     _fetchUserData(value);
                   }

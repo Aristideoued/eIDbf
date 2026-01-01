@@ -1,7 +1,11 @@
+import 'package:e_id_bf/Screens/LoaderPage.dart';
 import 'package:e_id_bf/Screens/login.dart';
+import 'package:e_id_bf/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+Future<void> main() async {
+  // await AuthService.initializeAuth();
+  //WidgetsFlutterBinding.ensureInitialized();
   runApp(DigitalIdentityApp());
 }
 
@@ -17,7 +21,7 @@ class DigitalIdentityApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: LoginPage(),
+      home: LoaderPage(),
     );
   }
 }

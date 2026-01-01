@@ -1,6 +1,7 @@
 import 'package:e_id_bf/Screens/Home.dart';
 import 'package:e_id_bf/Screens/Register.dart';
 import 'package:e_id_bf/layout/main_layout.dart';
+import 'package:e_id_bf/services/LoginService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -85,25 +86,55 @@ class _LoginPageState extends State<LoginPage> {
 
                 // Bouton de connexion
                 ElevatedButton(
-                  onPressed: () {
-                    // Action pour se connecter
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MainLayout()),
+                  onPressed: () async {
+                    // 🔄 Loader
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) =>
+                          const Center(child: CircularProgressIndicator()),
                     );
-                    /* Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                    );*/
+
+                    try {
+                      final response = await LoginService.login(
+                        iu: _usernameController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+
+                      Navigator.pop(context); // ❌ fermer le loader
+
+                      if (response.statusCode == 200) {
+                        // ✅ Connexion OK
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const MainLayout()),
+                        );
+                      } else {
+                        // ❌ Mauvais identifiants
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Identifiants incorrects'),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      Navigator.pop(context);
+
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Erreur : $e')));
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // Couleur de fond du bouton
-                    foregroundColor:
-                        Colors.white, // Couleur du texte (ici blanc)
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
-                    textStyle: TextStyle(fontSize: 16),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 40,
+                    ),
+                    textStyle: const TextStyle(fontSize: 16),
                   ),
-                  child: Text('Se connecter'),
+                  child: const Text('Se connecter'),
                 ),
                 SizedBox(height: 20),
 
