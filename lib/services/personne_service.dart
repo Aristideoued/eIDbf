@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:e_id_bf/config/app_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
 
 class PersonneService {
@@ -46,7 +48,9 @@ class PersonneService {
     // yyyy-MM-dd
   }) async {
     final token = await AuthService.getToken();
-
+    if (token == null) {
+      throw Exception('Bearer token introuvable');
+    }
     // ignore: avoid_print
     print("Token====== dans register  " + token.toString());
 
@@ -63,10 +67,8 @@ class PersonneService {
       "password": password,
     };
 
-    print("Body dans register======= " + body.toString());
-
     final response = await http
-        .post(
+        .put(
           uri,
           headers: {
             'Content-Type': 'application/json',
@@ -82,6 +84,32 @@ class PersonneService {
       throw Exception(
         "Erreur register (${response.statusCode}) : ${response.body}",
       );
+    }
+  }
+
+  static Future<String> getSavedIu() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('iu') ?? '';
+  }
+
+  static Future<Uint8List?> fetchPhoto() async {
+    final prefs = await SharedPreferences.getInstance();
+    final iu = prefs.getString('iu') ?? '';
+    final token = await AuthService.getToken(); // Ton token JWT
+
+    if (iu.isEmpty || token == null) return null;
+
+    final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/personnes/photo/$iu');
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      return response.bodyBytes; // Retourne les bytes de l'image
+    } else {
+      print("Erreur récupération photo : ${response.statusCode}");
+      return null;
     }
   }
 }

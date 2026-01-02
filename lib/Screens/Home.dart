@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:e_id_bf/Screens/Eservices/eservices_page.dart';
 import 'package:e_id_bf/Screens/Identity/casier_page.dart';
 import 'package:e_id_bf/Screens/Identity/certificat_page.dart';
@@ -5,51 +7,81 @@ import 'package:e_id_bf/Screens/Identity/cnib_page.dart';
 import 'package:e_id_bf/Screens/Identity/passport_page.dart';
 import 'package:e_id_bf/Screens/Identity/permis_page.dart';
 import 'package:e_id_bf/Screens/qrcode_page.dart';
+import 'package:e_id_bf/config/app_config.dart';
 import 'package:e_id_bf/layout/main_layout_controller.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   static const Color mainColor = Color(0xFF0B3C8A);
   static const Color bgColor = Color(0xFFF5F6FA);
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String _iu = '';
+  String _fullName = '';
+  String? _photoUrl; // URL ou bytes pour Image.network
+  Uint8List? _photoBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      // 1️⃣ Récupérer l'IU depuis les SharedPreferences
+      final iu = await PersonneService.getSavedIu();
+      if (iu.isEmpty) return;
+
+      setState(() {
+        _iu = iu;
+      });
+
+      // 2️⃣ Récupérer les infos de la personne depuis le backend
+      final personne = await PersonneService.getByIu(
+        iu,
+      ); // tu dois créer cette fonction
+      if (personne != null) {
+        setState(() {
+          _fullName = '${personne['nom']} ${personne['prenom']}';
+          // Construire l'URL pour l'image
+          _photoUrl =
+              '${ApiConfig.baseUrl}/api/v1/personnes/photo/${personne['iu']}';
+        });
+
+        /* final photoBytes = await PersonneService.fetchPhoto();
+        if (photoBytes != null) {
+          setState(() => _photoBytes = photoBytes);
+        }*/
+      }
+    } catch (e) {
+      print('Erreur récupération infos utilisateur: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: HomePage.bgColor,
       appBar: AppBar(
-        backgroundColor: mainColor,
+        backgroundColor: HomePage.mainColor,
         elevation: 0,
         title: const Text("eIDbf"),
         centerTitle: true,
       ),
       body: Stack(
         children: [
-          // 🔥 FOND DÉCORATIF BAS
-          /* Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 180,
-              decoration: const BoxDecoration(
-                color: mainColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(32),
-                  topRight: Radius.circular(32),
-                ),
-              ),
-            ),
-          ),*/
-
-          // 🔝 CONTENU PRINCIPAL
           Column(
             children: [
               _header(),
-
               const SizedBox(height: 40),
-
               Expanded(child: _identityGrid(context)),
             ],
           ),
@@ -64,7 +96,7 @@ class HomePage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
       decoration: const BoxDecoration(
-        color: mainColor,
+        color: HomePage.mainColor,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(26),
           bottomRight: Radius.circular(26),
@@ -72,7 +104,7 @@ class HomePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 🔥 IMAGE À LA PLACE DE L’AVATAR
+          // 🔥 PHOTO DE PROFIL (backend ou placeholder)
           Container(
             width: 200,
             height: 200,
@@ -82,22 +114,29 @@ class HomePage extends StatelessWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.all(10),
-              child: Image.asset("assets/user.jpeg", fit: BoxFit.contain),
+              child: _photoUrl != null
+                  ? Image.network(
+                      _photoUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.person, size: 100),
+                    )
+                  : Image.asset("assets/user.jpeg", fit: BoxFit.contain),
             ),
           ),
 
           const SizedBox(height: 10),
 
-          const Text(
-            "123456789123",
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          Text(
+            _iu.isNotEmpty ? _iu : 'Chargement...',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
 
           const SizedBox(height: 2),
 
-          const Text(
-            "OUEDRAOGO Aristide",
-            style: TextStyle(
+          Text(
+            _fullName.isNotEmpty ? _fullName : 'Nom complet',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -105,28 +144,23 @@ class HomePage extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-          Builder(
-            builder: (context) => ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const QrCodePage()),
-                );
-              },
-              icon: const Icon(Icons.qr_code),
-              label: const Text("Générer QR Code"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: mainColor,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 9,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                elevation: 0,
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QrCodePage()),
+              );
+            },
+            icon: const Icon(Icons.qr_code),
+            label: const Text("Générer QR Code"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: HomePage.mainColor,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
               ),
+              elevation: 0,
             ),
           ),
         ],
@@ -186,22 +220,18 @@ class HomePage extends StatelessWidget {
     required bool isSubPage,
   }) {
     return Material(
-      color: mainColor,
+      color: HomePage.mainColor,
       borderRadius: BorderRadius.circular(14),
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
           if (isSubPage) {
-            mainLayoutController.openSubPage?.call(
-              page, // ici, page = EservicesPageContent(), pas EservicesPage
-              title: title,
-            );
+            mainLayoutController.openSubPage?.call(page, title: title);
           } else {
             Navigator.push(context, MaterialPageRoute(builder: (_) => page));
           }
         },
-
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(

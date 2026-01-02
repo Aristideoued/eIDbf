@@ -15,10 +15,6 @@ class LoginService {
       throw Exception('Bearer token introuvable');
     }
 
-    print("==========Identifiant Unique================" + iu);
-
-    print("==========Password================" + password);
-
     return http.post(
       Uri.parse('${ApiConfig.baseUrl}${ApiConfig.login}'),
       headers: {

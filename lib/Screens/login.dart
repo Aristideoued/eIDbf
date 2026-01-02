@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:e_id_bf/Screens/Home.dart';
 import 'package:e_id_bf/Screens/Register.dart';
 import 'package:e_id_bf/layout/main_layout.dart';
 import 'package:e_id_bf/services/LoginService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -103,8 +106,23 @@ class _LoginPageState extends State<LoginPage> {
 
                       Navigator.pop(context); // ❌ fermer le loader
 
+                      print(
+                        "Response dans login========================== " +
+                            response.body,
+                      );
+
                       if (response.statusCode == 200) {
-                        print("Response dans login " + response.toString());
+                        final data = jsonDecode(
+                          response.body,
+                        ); // Transformer le JSON en Map
+
+                        // Récupérer l'IU
+                        final iu = data['iu'] ?? '';
+
+                        // ✅ Sauvegarder l'IU dans les SharedPreferences
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('iu', iu);
+                        // print("Response dans login " + response.toString());
 
                         // ✅ Connexion OK
                         Navigator.pushReplacement(
