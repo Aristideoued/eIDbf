@@ -46,21 +46,33 @@ class _LoginPageState extends State<LoginPage> {
                 // Identifiant unique
                 TextField(
                   controller: _usernameController,
-                  keyboardType:
-                      TextInputType.number, // Autoriser seulement les chiffres
+                  keyboardType: TextInputType.number,
+                  enableInteractiveSelection: true,
                   inputFormatters: [
-                    FilteringTextInputFormatter
-                        .digitsOnly, // Limite à des chiffres
-                    LengthLimitingTextInputFormatter(
-                      12,
-                    ), // Limite à 12 caractères
+                    TextInputFormatter.withFunction((oldValue, newValue) {
+                      final digitsOnly = newValue.text.replaceAll(
+                        RegExp(r'\D'),
+                        '',
+                      );
+                      final limited = digitsOnly.length > 12
+                          ? digitsOnly.substring(0, 12)
+                          : digitsOnly;
+
+                      return TextEditingValue(
+                        text: limited,
+                        selection: TextSelection.collapsed(
+                          offset: limited.length,
+                        ),
+                      );
+                    }),
                   ],
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Identifiant unique',
                     prefixIcon: Icon(Icons.person),
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 SizedBox(height: 20),
 
                 // Mot de passe

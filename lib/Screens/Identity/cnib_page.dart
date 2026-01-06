@@ -1,10 +1,60 @@
+import 'package:e_id_bf/config/app_config.dart';
+import 'package:e_id_bf/services/document_service.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 
-class CNIBPage extends StatelessWidget {
+class CNIBPage extends StatefulWidget {
   const CNIBPage({super.key});
 
   @override
+  State<CNIBPage> createState() => _CNIBPageState();
+}
+
+class _CNIBPageState extends State<CNIBPage> {
+  Map<String, dynamic>? cnibData;
+  bool isLoading = true;
+  String? _photoUrl; // URL ou bytes pour Image.network
+
+  Future<Map<String, dynamic>> _loadCnib() async {
+    return DocumentService.getDocument(
+      typeLibelle: 'CNIB',
+      iu: await PersonneService.getSavedIu(),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadCnib()
+        .then((data) {
+          setState(() {
+            cnibData = data;
+            isLoading = false;
+            _photoUrl =
+                '${ApiConfig.baseUrl}${ApiConfig.documentPhoto(data["id"].toString())}';
+          });
+
+          print('📄 CNIB DATA => $data');
+          print('📄 CNIB DATA => $_photoUrl');
+        })
+        .catchError((e) {
+          isLoading = false;
+          print('❌ ERREUR CNIB => $e');
+        });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (cnibData == null) {
+      return const Scaffold(
+        body: Center(child: Text("Impossible de charger la CNIB")),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text("Ma CNIB")),
       body: Center(
@@ -79,7 +129,14 @@ class CNIBPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Image.asset("assets/photo.jpeg", fit: BoxFit.cover),
+                  child: _photoUrl != null
+                      ? Image.network(
+                          _photoUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.person, size: 100),
+                        )
+                      : Image.asset("assets/user.jpeg", fit: BoxFit.contain),
                 ),
               ),
 
@@ -87,9 +144,12 @@ class CNIBPage extends StatelessWidget {
               Positioned(
                 left: 100,
                 top: 45,
-                child: const Text(
-                  "N° 10030700102006180",
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                child: Text(
+                  "NIP: ${cnibData?['numero']?['nip'] ?? ''}",
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
 
@@ -97,8 +157,8 @@ class CNIBPage extends StatelessWidget {
               Positioned(
                 left: 100,
                 top: 60,
-                child: const Text(
-                  "Nom : OUEDRAOGO",
+                child: Text(
+                  "Nom: ${cnibData?['personne']?['nom'] ?? ''}",
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -107,9 +167,9 @@ class CNIBPage extends StatelessWidget {
               Positioned(
                 left: 100,
                 top: 80,
-                child: const Text(
-                  "Prénoms : ARISTIDE",
-                  style: TextStyle(fontSize: 12),
+                child: Text(
+                  "Prénoms: ${cnibData?['personne']?['prenom'] ?? ''}",
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
 
@@ -134,9 +194,9 @@ class CNIBPage extends StatelessWidget {
               Positioned(
                 right: 15,
                 top: 120,
-                child: const Text(
-                  "Taille : 176 cm",
-                  style: TextStyle(fontSize: 11),
+                child: Text(
+                  "Taille: ${cnibData?['taille'] ?? ''} cm",
+                  style: const TextStyle(fontSize: 14),
                 ),
               ),
 
@@ -146,7 +206,18 @@ class CNIBPage extends StatelessWidget {
                 bottom: 15,
                 child: const Text(
                   "Délivrée : 08/04/2024\nExpire : 07/04/2034",
-                  style: TextStyle(fontSize: 10),
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+              Positioned(
+                left: 200,
+                bottom: 10,
+                child: Text(
+                  cnibData?['numero']?['reference'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 class ApiConfig {
   // Base URL
   static const String baseUrl = 'http://192.168.11.114:8080';
@@ -14,4 +16,9 @@ class ApiConfig {
   static String updatePersonne(String iu) => '/api/v1/personnes/update/iu/$iu';
 
   static String personneByIu(String iu) => '/api/v1/personnes/iu/$iu';
+
+  static String getDocument(String typeLibelle, String iu) =>
+      '/api/v1/documents/search?typeLibelle=$typeLibelle&iu=$iu';
+
+  static String documentPhoto(String docId) => '/api/v1/documents/photo/$docId';
 }
