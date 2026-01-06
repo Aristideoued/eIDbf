@@ -12,6 +12,7 @@ class CNIBPage extends StatefulWidget {
 
 class _CNIBPageState extends State<CNIBPage> {
   Map<String, dynamic>? cnibData;
+  String? errorMessage;
   bool isLoading = true;
   String? _photoUrl; // URL ou bytes pour Image.network
 
@@ -20,6 +21,22 @@ class _CNIBPageState extends State<CNIBPage> {
       typeLibelle: 'CNIB',
       iu: await PersonneService.getSavedIu(),
     );
+  }
+
+  String formatDate(String? date) {
+    if (date == null || date.isEmpty) return '--/--/----';
+    final d = DateTime.tryParse(date);
+    if (d == null) return '--/--/----';
+    return "${d.day.toString().padLeft(2, '0')}/"
+        "${d.month.toString().padLeft(2, '0')}/"
+        "${d.year}";
+  }
+
+  String formatSexe(String? sexe) {
+    if (sexe == null) return '';
+    if (sexe.toLowerCase() == 'masculin') return 'M';
+    if (sexe.toLowerCase() == 'feminin') return 'F';
+    return '';
   }
 
   @override
@@ -31,28 +48,56 @@ class _CNIBPageState extends State<CNIBPage> {
           setState(() {
             cnibData = data;
             isLoading = false;
+            errorMessage = null;
             _photoUrl =
                 '${ApiConfig.baseUrl}${ApiConfig.documentPhoto(data["id"].toString())}';
           });
-
-          print('📄 CNIB DATA => $data');
-          print('📄 CNIB DATA => $_photoUrl');
         })
         .catchError((e) {
-          isLoading = false;
+          setState(() {
+            isLoading = false;
+            cnibData = null;
+            errorMessage = "Aucun document trouvé";
+          });
           print('❌ ERREUR CNIB => $e');
         });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("CNIB")),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 80,
+                color: Colors.orange,
+              ),
 
-    if (cnibData == null) {
-      return const Scaffold(
-        body: Center(child: Text("Impossible de charger la CNIB")),
+              const SizedBox(height: 16),
+
+              Text(
+                errorMessage!,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /* ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text("Retour"),
+              ),*/
+            ],
+          ),
+        ),
       );
     }
     return Scaffold(
@@ -177,9 +222,9 @@ class _CNIBPageState extends State<CNIBPage> {
               Positioned(
                 left: 100,
                 top: 100,
-                child: const Text(
-                  "Né(e) le : 31/12/1995 à BOUSSOUMA",
-                  style: TextStyle(fontSize: 11),
+                child: Text(
+                  "Né(e) le : ${formatDate(cnibData?['personne']?['dateNaissance'])} à ${cnibData?['personne']?['lieuNaissance'] ?? '--'}",
+                  style: const TextStyle(fontSize: 11),
                 ),
               ),
 
@@ -187,7 +232,10 @@ class _CNIBPageState extends State<CNIBPage> {
               Positioned(
                 left: 100,
                 top: 120,
-                child: const Text("Sexe : M", style: TextStyle(fontSize: 11)),
+                child: Text(
+                  "Sexe : ${formatSexe(cnibData?['personne']?['sexe'])}",
+                  style: const TextStyle(fontSize: 11),
+                ),
               ),
 
               /// 🔟 TAILLE
@@ -204,11 +252,13 @@ class _CNIBPageState extends State<CNIBPage> {
               Positioned(
                 left: 15,
                 bottom: 15,
-                child: const Text(
-                  "Délivrée : 08/04/2024\nExpire : 07/04/2034",
-                  style: TextStyle(fontSize: 14),
+                child: Text(
+                  "Délivrée : ${formatDate(cnibData?['dateDelivrance'])}\n"
+                  "Expire : ${formatDate(cnibData?['dateExpiration'])}",
+                  style: const TextStyle(fontSize: 14),
                 ),
               ),
+
               Positioned(
                 left: 200,
                 bottom: 10,
