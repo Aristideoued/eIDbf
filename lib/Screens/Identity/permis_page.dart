@@ -1,10 +1,100 @@
+import 'package:e_id_bf/config/app_config.dart';
+import 'package:e_id_bf/services/document_service.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 
-class PermisPage extends StatelessWidget {
+class PermisPage extends StatefulWidget {
   const PermisPage({super.key});
 
   @override
+  State<PermisPage> createState() => _PermisPageState();
+}
+
+class _PermisPageState extends State<PermisPage> {
+  Map<String, dynamic>? permisData;
+  String? errorMessage;
+  bool isLoading = true;
+  String? _photoUrl; // URL ou bytes pour Image.network
+
+  Future<Map<String, dynamic>> _loadPermis() async {
+    return DocumentService.getDocument(
+      typeLibelle: 'Permis de conduire',
+      iu: await PersonneService.getSavedIu(),
+    );
+  }
+
+  String formatDate(String? date) {
+    if (date == null || date.isEmpty) return '--/--/----';
+    final d = DateTime.tryParse(date);
+    if (d == null) return '--/--/----';
+    return "${d.day.toString().padLeft(2, '0')}/"
+        "${d.month.toString().padLeft(2, '0')}/"
+        "${d.year}";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadPermis()
+        .then((data) {
+          setState(() {
+            print(data.toString());
+            permisData = data;
+            isLoading = false;
+            errorMessage = null;
+            _photoUrl =
+                '${ApiConfig.baseUrl}${ApiConfig.documentPhoto(data["id"].toString())}';
+          });
+        })
+        .catchError((e) {
+          setState(() {
+            isLoading = false;
+            permisData = null;
+            errorMessage = "Aucun document trouvé";
+          });
+          // ignore: avoid_print
+          print('ERREUR CNIB => $e');
+        });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Permis de conduire")),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 80,
+                color: Colors.orange,
+              ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                errorMessage!,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /* ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text("Retour"),
+              ),*/
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text("Mon permis")),
       body: Center(
@@ -59,7 +149,7 @@ class PermisPage extends StatelessWidget {
                       "La Patrie ou la Mort,\nNous Vaincrons",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 8,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -79,7 +169,14 @@ class PermisPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Image.asset("assets/permis.jpeg", fit: BoxFit.cover),
+                  child: _photoUrl != null
+                      ? Image.network(
+                          _photoUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.person, size: 100),
+                        )
+                      : Image.asset("assets/user.jpeg", fit: BoxFit.contain),
                 ),
               ),
 
@@ -87,66 +184,66 @@ class PermisPage extends StatelessWidget {
               Positioned(
                 left: 100,
                 top: 45,
-                child: const Text(
-                  "N° 20241225585552",
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                child: Text(
+                  "N° ${permisData?['numero']?['reference']}",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
 
               /// 6️⃣ NOM
               Positioned(
                 left: 100,
-                top: 60,
-                child: const Text(
-                  "Nom : OUEDRAOGO",
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                top: 70,
+                child: Text(
+                  "Nom : ${permisData?['personne']?['nom']}",
+                  style: TextStyle(fontSize: 15),
                 ),
               ),
 
               /// 7️⃣ PRÉNOMS
               Positioned(
                 left: 100,
-                top: 80,
-                child: const Text(
-                  "Prénoms : ARISTIDE",
-                  style: TextStyle(fontSize: 12),
+                top: 90,
+                child: Text(
+                  "Prénoms : ${permisData?['personne']?['prenom']}",
+                  style: TextStyle(fontSize: 15),
                 ),
               ),
 
               /// 8️⃣ DATE & LIEU DE NAISSANCE
               Positioned(
                 left: 100,
-                top: 100,
-                child: const Text(
-                  "Né(e) le : 31/12/1995 à BOUSSOUMA",
-                  style: TextStyle(fontSize: 11),
+                top: 120,
+                child: Text(
+                  "Né(e) le : ${formatDate(permisData?['personne']?['dateNaissance'])} à ${permisData?['personne']?['lieuNaissance']}",
+                  style: TextStyle(fontSize: 15),
                 ),
               ),
 
               /// 9️⃣ SEXE
-              Positioned(
+              /* Positioned(
                 left: 100,
                 top: 120,
                 child: const Text("Sexe : M", style: TextStyle(fontSize: 11)),
-              ),
+              ),*/
 
               /// 🔟 TAILLE
-              Positioned(
+              /* Positioned(
                 right: 15,
                 top: 120,
                 child: const Text(
                   "Taille : 176 cm",
                   style: TextStyle(fontSize: 11),
                 ),
-              ),
+              ),*/
 
               /// 1️⃣1️⃣ DATES DE VALIDITÉ
               Positioned(
                 left: 15,
                 bottom: 15,
-                child: const Text(
-                  "Délivrée : 08/04/2024\nExpire : 07/04/2034",
-                  style: TextStyle(fontSize: 10),
+                child: Text(
+                  "Délivrée : ${permisData?['dateDelivrance']}\nExpire : ${permisData?['dateExpiration']}",
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ],

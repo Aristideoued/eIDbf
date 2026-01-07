@@ -3,8 +3,8 @@ import 'dart:ffi';
 class ApiConfig {
   // Base URL
   static const String baseUrl = 'http://192.168.11.141:8080';
-  // 👉 10.0.2.2 = localhost depuis un émulateur Android
-  // 👉 pour iOS simulator : http://localhost:8080
+  //  10.0.2.2 = localhost depuis un émulateur Android
+  // pour iOS simulator : http://localhost:8080
 
   // Credentials de base
   static const String username = 'ouedraogoaris@gmail.com';

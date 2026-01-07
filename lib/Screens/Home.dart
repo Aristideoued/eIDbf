@@ -173,6 +173,7 @@ class _HomePageState extends State<HomePage> {
     final items = [
       (Icons.credit_card, "MA CNIB", const CNIBPage(), false),
       (Icons.flight, "MON PASSEPORT", const PassportPage(), false),
+      (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage(), false),
       (
         Icons.description,
         "CERTIFICAT DE NATIONALITÉ",
@@ -180,7 +181,7 @@ class _HomePageState extends State<HomePage> {
         false,
       ),
       (Icons.gavel, "CASIER JUDICIAIRE", const CasierPage(), false),
-      (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage(), false),
+
       (
         Icons.miscellaneous_services,
         "E-SERVICES",

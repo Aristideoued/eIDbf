@@ -59,7 +59,8 @@ class _CNIBPageState extends State<CNIBPage> {
             cnibData = null;
             errorMessage = "Aucun document trouvé";
           });
-          print('❌ ERREUR CNIB => $e');
+          // ignore: avoid_print
+          print('ERREUR CNIB => $e');
         });
   }
 
