@@ -1,7 +1,87 @@
+import 'package:e_id_bf/services/document_service.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 
-class CasierPage extends StatelessWidget {
+class CasierPage extends StatefulWidget {
   const CasierPage({super.key});
+
+  @override
+  State<CasierPage> createState() => _CasierPageState();
+}
+
+class _CasierPageState extends State<CasierPage> {
+  Map<String, dynamic>? casierData;
+  String? errorMessage;
+  bool isLoading = true;
+  // URL ou bytes pour Image.network
+
+  Future<Map<String, dynamic>> _loadCasier() async {
+    return DocumentService.getDocument(
+      typeLibelle: 'Casier Judiciaire',
+      iu: await PersonneService.getSavedIu(),
+    );
+  }
+
+  String formatDate(String? date) {
+    if (date == null) return '--- --- ----';
+
+    final cleaned = date.trim();
+    if (cleaned.isEmpty) return '--- --- ----';
+
+    DateTime? d;
+
+    try {
+      // Cas ISO standard
+      d = DateTime.parse(cleaned);
+    } catch (_) {
+      return '--- --- ----';
+    }
+
+    const months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+
+    final day = d.day.toString().padLeft(2, '0');
+    final month = months[d.month - 1];
+    final year = d.year.toString();
+
+    return "$day $month $year";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadCasier()
+        .then((data) {
+          setState(() {
+            print(data.toString());
+            casierData = data;
+            isLoading = false;
+            errorMessage = null;
+          });
+        })
+        .catchError((e) {
+          setState(() {
+            isLoading = false;
+            casierData = null;
+            errorMessage = "Aucun document trouvé";
+          });
+          // ignore: avoid_print
+          print('ERREUR CNIB => $e');
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +193,11 @@ class CasierPage extends StatelessWidget {
   Widget _identitySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        _InfoLine("Le nommé", "OUEDRAOGO Aristide"),
+      children: [
+        _InfoLine(
+          "Le nommé",
+          "${(casierData?['personne']?['nom'])?.toUpperCase()} ${casierData?['personne']?['nom']}",
+        ),
         SizedBox(height: 6),
         _InfoLine("Fils de", "PORGO Ousmane"),
         _InfoLine("Et de", "OUEDRAOGO Mamounata"),

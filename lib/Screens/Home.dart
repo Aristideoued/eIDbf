@@ -168,9 +168,91 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _grid(List items) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 2.1,
+      ),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return _menuButton(
+          context,
+          icon: item.$1,
+          title: item.$2,
+          page: item.$3,
+          isSubPage: item.$4,
+        );
+      },
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _dividerWithLabel1(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        children: [
+          const Expanded(child: Divider()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 14, 13, 13),
+              ),
+            ),
+          ),
+          const Expanded(child: Divider()),
+        ],
+      ),
+    );
+  }
+
+  Widget _dividerWithLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: Row(
+        children: [
+          const Expanded(child: Divider()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 14, 13, 13),
+              ),
+            ),
+          ),
+          const Expanded(child: Divider()),
+        ],
+      ),
+    );
+  }
+
   // ================= GRID =================
   Widget _identityGrid(BuildContext context) {
-    final items = [
+    final documents = [
       (Icons.credit_card, "MA CNIB", const CNIBPage(), false),
       (Icons.flight, "MON PASSEPORT", const PassportPage(), false),
       (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage(), false),
@@ -180,8 +262,9 @@ class _HomePageState extends State<HomePage> {
         const CertificatPage(),
         false,
       ),
-      (Icons.gavel, "CASIER JUDICIAIRE", const CasierPage(), false),
+    ];
 
+    final eservices = [
       (
         Icons.miscellaneous_services,
         "E-SERVICES",
@@ -190,7 +273,28 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
-    return GridView.builder(
+    /*final items = [
+      (Icons.credit_card, "MA CNIB", const CNIBPage(), false),
+      (Icons.flight, "MON PASSEPORT", const PassportPage(), false),
+      (Icons.directions_car, "PERMIS DE CONDUIRE", const PermisPage(), false),
+      (
+        Icons.description,
+        "CERTIFICAT DE NATIONALITÉ",
+        const CertificatPage(),
+        false,
+      ),
+      /* (Icons.gavel, "CASIER JUDICIAIRE", const CasierPage(), false),
+*/
+      /*(
+        Icons.miscellaneous_services,
+        "E-SERVICES",
+        const EservicesPage(),
+        false,
+      ),
+      */
+    ];*/
+
+    /* return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       itemCount: items.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -209,6 +313,21 @@ class _HomePageState extends State<HomePage> {
           isSubPage: item.$4,
         );
       },
+    );*/
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      children: [
+        _dividerWithLabel1("DOCUMENTS OFFICIELS"),
+
+        _grid(documents),
+
+        const SizedBox(height: 24),
+        _dividerWithLabel("E-SERVICES"),
+
+        const SizedBox(height: 16),
+        _grid(eservices),
+      ],
     );
   }
 

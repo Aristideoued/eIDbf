@@ -1,10 +1,124 @@
+import 'package:e_id_bf/services/document_service.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 
-class CertificatPage extends StatelessWidget {
+class CertificatPage extends StatefulWidget {
   const CertificatPage({super.key});
+  @override
+  State<CertificatPage> createState() => _CertificatPageState();
+}
+
+class _CertificatPageState extends State<CertificatPage> {
+  Map<String, dynamic>? certificatData;
+  String? errorMessage;
+  bool isLoading = true;
+  // URL ou bytes pour Image.network
+
+  Future<Map<String, dynamic>> _loadCertificat() async {
+    return DocumentService.getDocument(
+      typeLibelle: 'Certificat de nationalité',
+      iu: await PersonneService.getSavedIu(),
+    );
+  }
+
+  String formatDate(String? date) {
+    if (date == null) return '--- --- ----';
+
+    final cleaned = date.trim();
+    if (cleaned.isEmpty) return '--- --- ----';
+
+    DateTime? d;
+
+    try {
+      // Cas ISO standard
+      d = DateTime.parse(cleaned);
+    } catch (_) {
+      return '--- --- ----';
+    }
+
+    const months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+
+    final day = d.day.toString().padLeft(2, '0');
+    final month = months[d.month - 1];
+    final year = d.year.toString();
+
+    return "$day $month $year";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadCertificat()
+        .then((data) {
+          setState(() {
+            print(data.toString());
+            certificatData = data;
+            isLoading = false;
+            errorMessage = null;
+          });
+        })
+        .catchError((e) {
+          setState(() {
+            isLoading = false;
+            certificatData = null;
+            errorMessage = "Aucun document trouvé";
+          });
+          // ignore: avoid_print
+          print('ERREUR CNIB => $e');
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Certificat de Nationalité")),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 80,
+                color: Colors.orange,
+              ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                errorMessage!,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /* ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text("Retour"),
+              ),*/
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.grey.shade300,
       appBar: AppBar(
@@ -49,20 +163,20 @@ class CertificatPage extends StatelessWidget {
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
                 "COUR D’APPEL",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
-              Text("de : OUAGADOUGOU"),
+              Text("de : ${certificatData?['lieuEtablissement']}"),
               SizedBox(height: 8),
               Text(
                 "Tribunal de Grande Instance",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
-              Text("de : OUAHIGOUYA"),
+              Text("de : ${certificatData?['lieuEtablissement']}"),
             ],
           ),
         ),
@@ -108,7 +222,7 @@ class CertificatPage extends StatelessWidget {
   Widget _referenceNumber() {
     return Center(
       child: Text(
-        "N° 2700 / 2015",
+        "N° ${certificatData?['numero']?['reference']}",
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
@@ -120,38 +234,33 @@ class CertificatPage extends StatelessWidget {
 
   // ================= CORPS DU TEXTE =================
   Widget _bodyText() {
+    final contenu = certificatData?['contenu'] as String? ?? '';
+    final lieu = (certificatData?['lieuEtablissement'] as String? ?? '')
+        .toUpperCase();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         Text(
-          "LE PRÉSIDENT DU TRIBUNAL DE GRANDE INSTANCE DE OUAHIGOUYA\n"
+          "LE PRÉSIDENT DU TRIBUNAL DE GRANDE INSTANCE DE $lieu\n"
           "CERTIFIE AU VU DES PIÈCES SUIVANTES :",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 12),
-
-        _Paragraph(
-          "1° Extrait d’acte de naissance numéro 191 du 15 novembre 2001, délivré "
-          "par l’Officier de l’état civil de Sabcé, attestant que OUEDRAOGO Aristide, "
-          "fils de OUEDRAOGO Bernard et de OUEDRAOGO Joséphine, est né à Boussouma/Sabcé "
-          "le trente-un décembre mille neuf cent quatre-vingt-quinze (31/12/1995).",
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
 
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
 
-        _Paragraph(
-          "2° Extrait d’acte de naissance numéro 956 du 22 décembre 1983, délivré "
-          "par l’Officier de l’état civil de Tikaré, attestant que OUEDRAOGO Bernard, "
-          "père de OUEDRAOGO Aristide, est né à Horé en mille neuf cent cinquante-six (1956).",
-        ),
-
-        SizedBox(height: 16),
-
-        _Paragraph(
-          "QUE OUEDRAOGO Aristide, fils de OUEDRAOGO Bernard et de OUEDRAOGO Joséphine, "
-          "né à Boussouma/Sabcé le trente-un décembre mille neuf cent quatre-vingt-quinze "
-          "(31/12/1995), possède la nationalité Burkinabè en vertu de l’article 144 "
-          "du CODE DES PERSONNES ET DE LA FAMILLE comme étant né au Burkina Faso d’un père qui y est lui-même né.",
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: contenu
+              .split(';')
+              .where((p) => p.trim().isNotEmpty)
+              .map(
+                (p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _Paragraph('${p.trim()};'),
+                ),
+              )
+              .toList(),
         ),
       ],
     );
@@ -161,11 +270,11 @@ class CertificatPage extends StatelessWidget {
   Widget _footer() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: const [
+      children: [
         Text("Fait et délivré au Palais de Justice"),
         SizedBox(height: 4),
         Text(
-          "Ouahigouya, le 07 juillet 2015",
+          "${certificatData?['lieuEtablissement']}, le ${formatDate(certificatData?['dateDelivrance'])}",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 20),
@@ -173,7 +282,7 @@ class CertificatPage extends StatelessWidget {
         Text("Le Président du Tribunal"),
         SizedBox(height: 40),
 
-        Text("Gildas ZOURE", style: TextStyle(fontWeight: FontWeight.bold)),
+        /* Text("Gildas ZOURE", style: TextStyle(fontWeight: FontWeight.bold)),*/
       ],
     );
   }
