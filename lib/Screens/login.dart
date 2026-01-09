@@ -131,9 +131,13 @@ class _LoginPageState extends State<LoginPage> {
                         // Récupérer l'IU
                         final iu = data['iu'] ?? '';
 
+                        final id = data['id'] ?? '';
+
                         // ✅ Sauvegarder l'IU dans les SharedPreferences
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setString('iu', iu);
+                        await prefs.setString('id', id.toString());
+
                         // print("Response dans login " + response.toString());
 
                         // ✅ Connexion OK

@@ -76,7 +76,7 @@ class PersonneService {
           },
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 15));
+        .timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return jsonDecode(response.body);
@@ -90,6 +90,11 @@ class PersonneService {
   static Future<String> getSavedIu() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('iu') ?? '';
+  }
+
+  static Future<String> getSavedId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('id') ?? '';
   }
 
   static Future<Uint8List?> fetchPhoto() async {

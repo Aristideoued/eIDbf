@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:e_id_bf/Screens/Eservices/eservices_page.dart';
-import 'package:e_id_bf/Screens/Identity/casier_page.dart';
 import 'package:e_id_bf/Screens/Identity/certificat_page.dart';
 import 'package:e_id_bf/Screens/Identity/cnib_page.dart';
 import 'package:e_id_bf/Screens/Identity/passport_page.dart';
@@ -10,6 +9,7 @@ import 'package:e_id_bf/Screens/qrcode_page.dart';
 import 'package:e_id_bf/config/app_config.dart';
 import 'package:e_id_bf/layout/main_layout_controller.dart';
 import 'package:e_id_bf/services/personne_service.dart';
+import 'package:e_id_bf/services/qrcode_service.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,6 +24,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _iu = '';
+  int id = 0;
   String _fullName = '';
   String? _photoUrl; // URL ou bytes pour Image.network
   Uint8List? _photoBytes;
@@ -54,6 +55,7 @@ class _HomePageState extends State<HomePage> {
           // Construire l'URL pour l'image
           _photoUrl =
               '${ApiConfig.baseUrl}/api/v1/personnes/photo/${personne['iu']}';
+          id = personne['id'];
         });
 
         /* final photoBytes = await PersonneService.fetchPhoto();
@@ -129,7 +131,7 @@ class _HomePageState extends State<HomePage> {
 
           Text(
             _iu.isNotEmpty ? _iu : 'Chargement...',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            style: const TextStyle(color: Colors.white70, fontSize: 18),
           ),
 
           const SizedBox(height: 2),
@@ -138,18 +140,34 @@ class _HomePageState extends State<HomePage> {
             _fullName.isNotEmpty ? _fullName : 'Nom complet',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
 
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const QrCodePage()),
-              );
+            onPressed: () async {
+              try {
+                final response = await QrcodeService.createQrcode(
+                  personneId: id,
+                );
+
+                final String token = response['token'];
+                print("le token du qrcode=====${token}");
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => QrCodePage(token: token)),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Erreur lors de la création du QR Code : $e"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             icon: const Icon(Icons.qr_code),
             label: const Text("Générer QR Code"),
@@ -369,7 +387,7 @@ class _HomePageState extends State<HomePage> {
                     color: Colors.white,
                     fontSize: 11.8,
                     fontWeight: FontWeight.w600,
-                    height: 1.25,
+                    height: 1.5,
                   ),
                 ),
               ),
