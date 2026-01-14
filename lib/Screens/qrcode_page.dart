@@ -14,8 +14,11 @@ class QrCodePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 🔹 Génération du lien complet avec token
+    // final String qrLink =
+    // '${ApiConfig.baseUrl}/api/v1/qrcodes/verify?token=$token';
+
     final String qrLink =
-        '${ApiConfig.baseUrl}/api/v1/qrcodes/verify?token=$token';
+        "http://192.168.11.141:4200/#/authentication/identity/$token";
 
     return Scaffold(
       appBar: AppBar(title: const Text("QR Code Officiel")),
