@@ -65,7 +65,10 @@ class _RegisterPageState extends State<RegisterPage> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Aucune personne trouvée pour IU $iu')),
+          SnackBar(
+            content: Text('Aucune personne trouvée pour cet identifiant: $iu'),
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     } catch (e) {

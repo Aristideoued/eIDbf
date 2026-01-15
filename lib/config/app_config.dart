@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 class ApiConfig {
   // Base URL
-  static const String baseUrl = 'http://192.168.11.141:8080';
+  static const String baseUrl = 'http://10.10.20.228:8080';
   //  10.0.2.2 = localhost depuis un émulateur Android
   // pour iOS simulator : http://localhost:8080
 
@@ -22,6 +22,8 @@ class ApiConfig {
 
   static String getDocument(String typeLibelle, String iu) =>
       '/api/v1/documents/search?typeLibelle=$typeLibelle&iu=$iu';
+
+  static String verifyByIu(String iu) => '/api/v1/personnes/verify/$iu';
 
   static String documentPhoto(String docId) => '/api/v1/documents/photo/$docId';
 }

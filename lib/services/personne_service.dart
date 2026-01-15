@@ -37,6 +37,36 @@ class PersonneService {
     }
   }
 
+  static Future<Map<String, dynamic>?> verifyByIu(String iu) async {
+    final token = await AuthService.getToken();
+    if (token == null) {
+      throw Exception('Bearer token introuvable');
+    }
+
+    final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.verifyByIu(iu)}');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    // ignore: avoid_print
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      //print("Data for verification ========>$data");
+
+      return data; // JSON de PersonneDto
+    } else if (response.statusCode == 404) {
+      return null; // personne non trouvée
+    } else {
+      throw Exception(
+        'Erreur serveur ${response.statusCode}: ${response.body}',
+      );
+    }
+  }
+
   static Future<Map<String, dynamic>> registerPersonne({
     required String nom,
     required String prenom,

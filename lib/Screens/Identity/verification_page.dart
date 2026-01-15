@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:e_id_bf/config/app_config.dart';
 import 'package:e_id_bf/layout/main_layout.dart';
+import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -18,8 +22,9 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
 
   final TextEditingController _idController = TextEditingController();
   final MobileScannerController _scannerController = MobileScannerController();
+  String? _photoUrl; // URL ou bytes pour Image.network
 
-  Map<String, String>? _result;
+  Map<String, dynamic>? _result;
 
   // ================= RECHERCHE PAR ID =================
   void _searchById(String value) {
@@ -35,6 +40,32 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
       });
     } else {
       setState(() => _result = null);
+    }
+  }
+
+  Future<void> _fetchUserData(String iu) async {
+    try {
+      // setState(() => _isLoading = true);
+
+      final personne = await PersonneService.verifyByIu(iu);
+
+      if (personne != null) {
+        print("Date du user======>${personne.toString()}");
+
+        setState(() {
+          _result = personne;
+          _photoUrl =
+              '${ApiConfig.baseUrl}/api/v1/personnes/photo/${personne['iu']}';
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Aucune personne trouvée pour IU $iu')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Erreur serveur ou réseau')));
     }
   }
 
@@ -88,6 +119,7 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
                 if (_result != null) ...[
                   const SizedBox(height: 24),
                   _resultCard(),
+                  _documentsSection(),
                 ],
 
                 const SizedBox(height: 120),
@@ -198,7 +230,7 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(12),
           ],
-          onChanged: _searchById,
+          onChanged: _fetchUserData,
           decoration: InputDecoration(
             counterText: "",
             hintText: "Ex: 123456789012",
@@ -229,6 +261,236 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
     );
   }
 
+  Widget _documentCard(Map<String, dynamic> doc) {
+    return Container(
+      width: double.infinity, // ✅ pleine largeur
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ================= PHOTO =================
+          Container(
+            width: double.infinity,
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade200,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                '${ApiConfig.baseUrl}${ApiConfig.documentPhoto(doc["id"].toString())}',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Si l'image ne peut pas être chargée, on met l'image locale
+                  return Image.asset("assets/flag_bf.png", fit: BoxFit.cover);
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // ================= INFOS =================
+          _docRow("Type", doc["libelle"]),
+          _docRow("NIP", doc["nip"]),
+          _docRow("Référence", doc["reference"]),
+          _docRow("Délivré le", doc["dateDelivrance"]),
+          _docRow("Expire le", doc["dateExpiration"]),
+          _docRow("Autorité", doc["autorite"]),
+          _docRow("Lieu d'établissement", doc["lieuEtablissement"]),
+          _docRow("Contenu", doc["contenu"]),
+        ],
+      ),
+    );
+  }
+
+  Widget _docRow1(String label, dynamic value) {
+    if (value == null || value.toString().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ===== LABEL =====
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 13, // 🔹 libellé
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+              letterSpacing: 0.5,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          // ===== VALEUR =====
+          Text(
+            value.toString(),
+            style: const TextStyle(
+              fontSize: 17, // 🔥 valeur plus grande
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _docRow(String label, dynamic value) {
+    if (value == null || value.toString().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // ===== SI c'est le champ "Contenu", on split en paragraphes =====
+    if (label.toLowerCase() == "contenu") {
+      List<String> paragraphs = value.toString().split(';');
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ===== LABEL =====
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 4),
+
+            // ===== PARAGRAPHES =====
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: paragraphs
+                  .map(
+                    (p) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        p.trim(),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ===== AUTRES CHAMPS =====
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label : ",
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.black54,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value.toString(),
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentImage(String? contenu) {
+    if (contenu == null || contenu.isEmpty) {
+      return Image.asset("assets/document_placeholder.jpg", fit: BoxFit.cover);
+    }
+
+    // 🔹 Si c’est une URL
+    if (contenu.startsWith("http")) {
+      return Image.network(
+        contenu,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            Image.asset("assets/document_placeholder.jpg", fit: BoxFit.cover),
+      );
+    }
+
+    // 🔹 Si c’est du Base64
+    try {
+      final bytes = base64Decode(contenu);
+      return Image.memory(bytes, fit: BoxFit.cover);
+    } catch (_) {
+      return Image.asset("assets/document_placeholder.jpg", fit: BoxFit.cover);
+    }
+  }
+
+  Widget _documentsSection() {
+    final List docs = _result?["documentsValides"] ?? [];
+
+    if (docs.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 12),
+        child: Text(
+          "Aucun document valide",
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          "Documents d'identité",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+
+        ListView.builder(
+          itemCount: docs.length,
+          shrinkWrap: true, // ✅ important
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            return _documentCard(docs[index]);
+          },
+        ),
+      ],
+    );
+  }
+
   // ================= RESULT =================
   // ================= RESULT =================
   Widget _resultCard() {
@@ -251,19 +513,22 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
         children: [
           // ================= PHOTO =================
           Container(
-            width: 90,
-            height: 110,
+            width: 150,
+            height: 220,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: Colors.grey.shade200,
-              image: _result!["photo"] == null
+              image: _photoUrl != null
                   ? DecorationImage(
-                      // image: NetworkImage(_result!["photo"]!),
-                      image: AssetImage("assets/user.jpeg"),
+                      image: NetworkImage(_photoUrl!),
 
+                      //image: AssetImage("assets/user.jpeg"),
                       fit: BoxFit.cover,
                     )
-                  : null,
+                  : DecorationImage(
+                      image: AssetImage("assets/avatar.jpg"),
+                      fit: BoxFit.cover,
+                    ),
             ),
             /*child: _result!["photo"] == null
                 ? const Icon(Icons.person, size: 48, color: Colors.grey)
@@ -277,10 +542,13 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _row("Identifiant Unique", _result!["iu"]!),
                 _row("Nom", _result!["nom"]!),
                 _row("Prénom", _result!["prenom"]!),
                 _row("Sexe", _result!["sexe"]!),
                 _row("Date de naissance", _result!["dateNaissance"]!),
+                _row("Lieu de naissance", _result!["lieuNaissance"]!),
+                _row("Nationalité", _result!["nationalite"]!),
               ],
             ),
           ),
