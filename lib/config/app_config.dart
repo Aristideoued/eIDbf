@@ -2,10 +2,10 @@ import 'dart:ffi';
 
 class ApiConfig {
   // Base URL
-  static const String baseUrl = 'http://10.10.20.228:8080';
+  static const String baseUrl = 'http://192.168.11.141:8080';
   //  10.0.2.2 = localhost depuis un émulateur Android
   // pour iOS simulator : http://localhost:8080
-
+  //579415601907
   // Credentials de base
   static const String username = 'ouedraogoaris@gmail.com';
   static const String password = '2885351';
@@ -22,6 +22,13 @@ class ApiConfig {
 
   static String getDocument(String typeLibelle, String iu) =>
       '/api/v1/documents/search?typeLibelle=$typeLibelle&iu=$iu';
+
+  static String getNotifByPersonneId(String id) =>
+      '/api/v1/notifications/personne/$id';
+
+  static String readNotif(String id) => '/api/v1/notifications/read/$id';
+  static String unReadNotif(String personId) =>
+      '/api/v1/notifications/unread-count/$personId';
 
   static String verifyByIu(String iu) => '/api/v1/personnes/verify/$iu';
 

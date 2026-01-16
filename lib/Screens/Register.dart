@@ -1,10 +1,14 @@
+import 'package:e_id_bf/Screens/Home.dart';
 import 'package:e_id_bf/Screens/login.dart';
+import 'package:e_id_bf/layout/main_layout.dart';
 import 'package:e_id_bf/services/personne_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final String? iu; // ⬅️ paramètre optionnel
+
+  const RegisterPage({super.key, this.iu});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -25,6 +29,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _isPasswordMatched = true;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.iu != null && widget.iu!.isNotEmpty) {
+      debugPrint("IU fourni : ${widget.iu}");
+      _iuController.text = widget.iu!;
+
+      _fetchUserData(widget.iu!);
+      // 👉 pré-remplir un champ
+      // 👉 adapter le comportement de l’écran
+    } else {
+      debugPrint("Aucun IU fourni");
+    }
+  }
 
   @override
   void dispose() {
@@ -110,13 +130,19 @@ class _RegisterPageState extends State<RegisterPage> {
         password: _passwordController.text.trim(),
       );
 
-      print("Response dans register======= " + response.toString());
+      // print("Response dans register======= " + response.toString());
 
       if (response.containsKey('id') && response['id'] != null) {
+        final bool isEdit = widget.iu != null && widget.iu!.isNotEmpty;
+
         // ✅ Succès : afficher un message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Compte créé avec succès !'),
+          SnackBar(
+            content: Text(
+              isEdit
+                  ? 'Compte modifié avec succès !'
+                  : 'Compte crée avec succès',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -125,15 +151,28 @@ class _RegisterPageState extends State<RegisterPage> {
         await Future.delayed(const Duration(seconds: 2));
 
         // 🔄 Naviguer vers la page de login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
+        if (isEdit) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainLayout()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+        }
       } else {
-        // ❌ Échec : afficher un message d'erreur
+        final bool isEdit = widget.iu != null && widget.iu!.isNotEmpty;
+
+        //  Échec : afficher un message d'erreur
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Échec de la création du compte.'),
+            content: Text(
+              isEdit
+                  ? 'Echec de modification du compte'
+                  : 'Échec de la création du compte.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -147,8 +186,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isEdit = widget.iu != null && widget.iu!.isNotEmpty;
     return Scaffold(
-      appBar: AppBar(title: const Text('Créer un Compte')),
+      appBar: AppBar(
+        title: Text(isEdit ? 'Modifier mon compte' : 'Créer un Compte'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -247,7 +289,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Créer un Compte'),
+                    : Text(isEdit ? 'Modifier mon compte' : 'Créer un Compte'),
               ),
             ],
           ),

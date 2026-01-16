@@ -1,4 +1,3 @@
-import 'package:e_id_bf/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -33,7 +32,7 @@ class QrCodePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              "Scannez ce code pour vérifier l'identité",
+              "Scannez ce code pour vérifier mon identité",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14),
             ),
