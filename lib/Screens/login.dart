@@ -25,11 +25,11 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(
-        247,
-        248,
-        249,
-        1,
+      backgroundColor: const Color.from(
+        alpha: 1,
+        red: 0.969,
+        green: 0.973,
+        blue: 0.976,
       ), // Background color
       body: SafeArea(
         child: Center(
@@ -40,7 +40,14 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Logo
-                Image.asset('assets/logo.png', height: 100, width: 100),
+                ClipOval(
+                  child: Image.asset(
+                    'assets/logo.png',
+                    height: 200,
+                    width: 200,
+                    fit: BoxFit.cover, // ⚡ remplit bien le cercle
+                  ),
+                ),
                 SizedBox(height: 40),
 
                 // Identifiant unique
